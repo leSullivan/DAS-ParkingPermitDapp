@@ -131,6 +131,14 @@ contract ParkingPermit is Ownable{
     priceForGuestRegistrationPerDay = _newPriceInWei * 1 wei;
   }
 
+  /**
+  @notice allows contract owner to withtdraw all funds
+   */
+  function withdrawFunds() external onlyOwner{
+    (bool success,) = msg.sender.call{value: address(this).balance}("");
+    require(success,"Transaction failed.");
+  }
+
   //lowLevelfunctions
 
   /**
