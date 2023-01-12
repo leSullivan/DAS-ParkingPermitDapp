@@ -53,7 +53,7 @@ contract ParkingPermit is Ownable{
   @param _citizen wallet address of citizen to verify guest registration
   @param _parkingZoneId id of registered parking zone
   */
-  function citizenRegistrationForResidency(address _citizen, string memory _licensePlate,  string memory _parkingZoneId) external payable onlyOwner{
+  function residentCarRegistration(address _citizen, string memory _licensePlate,  string memory _parkingZoneId) external payable onlyOwner{
     require(msg.value == priceForResidentRegistration, "Please send the exact ammount of ether");
     deadline = block.timestamp + timeRegisteredForCitizen;
     Permit memory permit = Permit(deadline, _parkingZoneId, true);
