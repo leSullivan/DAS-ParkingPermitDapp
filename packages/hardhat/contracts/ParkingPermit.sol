@@ -24,6 +24,10 @@ contract ParkingPermit is Ownable{
     address
   );
 
+  event permitRevoked(
+    address
+  );
+
   uint256 priceForResidentRegistration = 1 ether;
   uint256 priceForGuestRegistrationPerDay = 0.1 ether;
   uint256 timeRegisteredForCitizen = 365 days;
@@ -32,7 +36,7 @@ contract ParkingPermit is Ownable{
   string parkingZoneId;
 
   mapping(address => bool) private citizenIsResident;
-  mapping(address => string)private cizizenToParkingZoneId;
+  mapping(address => string)private residentToParkingZoneId;
   mapping(address => bool) private regulatorIsAuthorized;
   mapping(string => Permit) private carToPermit;
 
@@ -55,7 +59,7 @@ contract ParkingPermit is Ownable{
     Permit memory permit = Permit(deadline, _parkingZoneId, true);
     carToPermit[_licensePlate] = permit;
     citizenIsResident[_citizen] = true;
-    cizizenToParkingZoneId[_citizen] = _parkingZoneId;
+    residentToParkingZoneId[_citizen] = _parkingZoneId;
     emit citizedRegistered(_citizen);
   }   
   
@@ -66,18 +70,21 @@ contract ParkingPermit is Ownable{
   */
   function registerGuestParkingPermit(uint256 _periodInDays, string memory _licensePlate) external onlyAuthorizedResident{
     deadline = block.timestamp + _periodInDays * 1 days;
-    parkingZoneId = cizizenToParkingZoneId[msg.sender];
+    parkingZoneId = residentToParkingZoneId[msg.sender];
     Permit memory permit = Permit(deadline, parkingZoneId,true);
     carToPermit[_licensePlate] = permit;
     emit citizenRegisteredGuest(msg.sender);
   }
   
-  // /**
-  // @notice berechtigungs kann vorzeitig entfernt werden. evtl. refund
-  // */
-  // function berechtigungWegnehmen(adresse){
-      
-  // }
+  /**
+  @notice revoke a permit from a car
+  */
+  function revokePermitFromCar(address _citizen, string memory _licensePlate) external onlyOwner{
+    Permit memory permit = Permit(block.timestamp, parkingZoneId, false);
+    carToPermit[_licensePlate] = permit;
+    citizenIsResident[_citizen] = false;
+    emit permitRevoked(msg.sender);
+  }
   
   /**
   @notice verify parking permit by licence plate input
@@ -96,7 +103,42 @@ contract ParkingPermit is Ownable{
     
   }
 
+  /**
+  @notice authorize a regulator to check license plates
+   */
+  function authorizeRugulator(address _regulator)external onlyOwner{
+    regulatorIsAuthorized[_regulator] = true;
+  }
+
+  /**
+  @notice unauthorize a regulator to check license plates
+  */
+  function deauthorizeRugulator(address _regulator)external onlyOwner{
+    regulatorIsAuthorized[_regulator] = false;
+  }
+
+  /**
+  @notice set price for resident registration in wei
+  */
+  function setPriceForResidentRegistration(uint256 _newPriceInWei)external{
+    priceForResidentRegistration = _newPriceInWei * 1 wei;
+  }
+
+  /**
+  @notice set price for guest registration in wei
+  */
+  function setPriceForGuestRegistration(uint256 _newPriceInWei)external{
+    priceForGuestRegistrationPerDay = _newPriceInWei * 1 wei;
+  }
+
   //lowLevelfunctions
+
+  /**
+  @dev reverts all unassociated payments
+   */
+  receive() external payable{
+    revert();
+  }
 
   /**
   @dev returns true when current block.timestamp > set deadline
