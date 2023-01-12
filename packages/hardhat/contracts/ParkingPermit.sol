@@ -106,7 +106,7 @@ contract ParkingPermit is Ownable{
   /**
   @notice authorize a regulator to check license plates
    */
-  function authorizeRugulator(address _regulator)external onlyOwner{
+  function authorizeRegulator(address _regulator)external onlyOwner{
     regulatorIsAuthorized[_regulator] = true;
   }
 
