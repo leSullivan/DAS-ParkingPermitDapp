@@ -176,7 +176,7 @@ function App(props) {
   );
 
   // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts, "YourContract", "purpose", [], localProviderPollingTime);
+  const purpose = useContractReader(readContracts, "ParkingPermit", "purpose", [], localProviderPollingTime);
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -337,7 +337,7 @@ function App(props) {
             */}
 
           <Contract
-            name="YourContract"
+            name="ParkingPermit"
             price={price}
             signer={userSigner}
             provider={localProvider}
@@ -352,6 +352,8 @@ function App(props) {
             yourLocalBalance={yourLocalBalance}
             mainnetProvider={mainnetProvider}
             price={price}
+            writeContracts={writeContracts}
+            tx={tx}
           />
         </Route>
         <Route path="/exampleui">

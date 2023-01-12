@@ -1,274 +1,99 @@
-import { Select } from "antd";
+import { Button, Card, DatePicker, Divider, Input, Progress, Slider, Spin, Switch } from "antd";
 import React, { useState } from "react";
-import { utils } from "ethers";
+import { ethers, utils } from "ethers";
 
-import { useTokenList } from "eth-hooks/dapps/dex";
-import { Address, AddressInput } from "../components";
+export default function Hints({ tx, writeContracts }) {
+  const [data, setData] = useState({ licensePlate: "", parkingZoneId: "" });
+  const [authorization, setAuthorization] = useState("");
+  const [res, setRes] = useState([]);
 
-const { Option } = Select;
+  const handleChange = event => {
+    setData({ ...data, [event.target.name]: event.target.value });
+  };
 
-export default function Hints({ yourLocalBalance, mainnetProvider, price, address }) {
-  // Get a list of tokens from a tokenlist -> see tokenlists.org!
-  const [selectedToken, setSelectedToken] = useState("Pick a token!");
-  const listOfTokens = useTokenList(
-    "https://raw.githubusercontent.com/SetProtocol/uniswap-tokenlist/main/set.tokenlist.json",
-  );
+  const onChangeHandler = event => {
+    setAuthorization(event.target.value);
+  };
+
+  const handleSubmit = async event => {
+    // prevents the submit button from refreshing the page
+    event.preventDefault();
+    console.log(data);
+
+    const result = await tx(writeContracts.ParkingPermit.verifyParkingPermit(data.licensePlate, data.parkingZoneId));
+    console.log(result);
+    setRes(result);
+    setData({ licensePlate: "", parkingZoneId: "" });
+  };
+
+  const handleAuthorized = event => {
+    // prevents the submit button from refreshing the page
+    event.preventDefault();
+    console.log(data);
+
+    const res = tx(writeContracts.ParkingPermit.authorizeRegulator(authorization), update => {
+      console.log("📡 Transaction Update:", update);
+      if (update && (update.status === "confirmed" || update.status === 1)) {
+        console.log(" 🍾 Transaction " + update.hash + " finished!");
+        console.log(
+          " ⛽️ " +
+            update.gasUsed +
+            "/" +
+            (update.gasLimit || update.gas) +
+            " @ " +
+            parseFloat(update.gasPrice) / 1000000000 +
+            " gwei",
+        );
+      }
+    });
+  };
+
+  console.log(res, "fuck");
 
   return (
     <div>
-      <div style={{ margin: 32 }}>
-        <span style={{ marginRight: 8 }}>👷</span>
-        Edit your <b>contract</b> in
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f9f9f9", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          packages/hardhat/contracts
-        </span>
-      </div>
-
-      <div style={{ margin: 32 }}>
-        <span style={{ marginRight: 8 }}>🛰</span>
-        <b>compile/deploy</b> with
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f1f1f1", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          yarn run deploy
-        </span>
-      </div>
-
-      <div style={{ margin: 32 }}>
-        <span style={{ marginRight: 8 }}>🚀</span>
-        Your <b>contract artifacts</b> are automatically injected into your frontend at
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f9f9f9", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          packages/react-app/src/contracts/
-        </span>
-      </div>
-
-      <div style={{ margin: 32 }}>
-        <span style={{ marginRight: 8 }}>🎛</span>
-        Edit your <b>frontend</b> in
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f9f9f9", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          packages/reactapp/src/App.js
-        </span>
-      </div>
-
-      <div style={{ marginTop: 32 }}>
-        <span style={{ marginRight: 8 }}>🔭</span>
-        explore the
-        <span
-          className="highlight"
-          style={{
-            marginLeft: 4,
-            marginRight: 4,
-            /* backgroundColor: "#f9f9f9", */
-            padding: 4,
-            borderRadius: 4,
-            fontWeight: "bolder",
-          }}
-        >
-          🖇 hooks
-        </span>
-        and
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f9f9f9", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          📦 components
-        </span>
-      </div>
-
-      <div style={{ marginTop: 32 }}>
-        for example, the
-        <span
-          className="highlight"
-          style={{ margin: 4, /* backgroundColor: "#f9f9f9", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          useBalance()
-        </span>{" "}
-        hook keeps track of your balance: <b>{utils.formatEther(yourLocalBalance || 0)}</b>
-      </div>
-
-      <div style={{ margin: 8 }}>
+      {/*
+        ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
+      */}
+      <div style={{ padding: 16, width: 400, margin: "auto", marginTop: "4rem" }}>
+        <div>{res[2] === true ? "valid" : "invalid"}</div>
         <div>
-          <b>useTokenList()</b> can get you an array of tokens from{" "}
-          <a href="https://tokenlists.org" target="_blank" rel="noopener noreferrer">
-            tokenlists.org!
-          </a>
+          <Input
+            placeholder={"Adresse"}
+            name="address"
+            style={{ marginBottom: "1rem" }}
+            onChange={event => setAuthorization(event.target.value)}
+          />
+          <Button onClick={handleAuthorized}>Authorisieren</Button>
         </div>
-        <Select
-          showSearch
-          value={selectedToken}
-          onChange={value => {
-            console.log(`selected ${value}`);
-            setSelectedToken(value);
-          }}
-          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-          optionFilterProp="children"
-        >
-          {listOfTokens.map(token => (
-            <Option key={token.address + "_" + token.symbol} value={token.symbol}>
-              {token.symbol}
-            </Option>
-          ))}
-        </Select>
-      </div>
-
-      <div style={{ marginTop: 32 }}>
-        as you build your app you&apos;ll need web3 specific components like an
-        <span
-          className="highlight"
-          style={{ margin: 4, /* backgroundColor: "#f9f9f9", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          {"<AddressInput/>"}
-        </span>
-        component:
-        <div style={{ width: 350, padding: 16, margin: "auto" }}>
-          <AddressInput ensProvider={mainnetProvider} />
-        </div>
-        <div>(try putting in your address, an ens address, or scanning a QR code)</div>
-      </div>
-
-      <div style={{ marginTop: 32 }}>
-        this balance could be multiplied by
-        <span
-          className="highlight"
-          style={{ margin: 4, /* backgroundColor: "#f9f9f9", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          price
-        </span>{" "}
-        that is loaded with the
-        <span
-          className="highlight"
-          style={{ margin: 4, /* backgroundColor: "#f9f9f9", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          usePrice
-        </span>{" "}
-        hook with the current value: <b>${price}</b>
-      </div>
-
-      <div style={{ marginTop: 32 }}>
-        <span style={{ marginRight: 8 }}>💧</span>
-        use the <b>faucet</b> to send funds to
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f9f9f9", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          <Address address={address} minimized /> {address}
-        </span>
-      </div>
-
-      <div style={{ marginTop: 32 }}>
-        <span style={{ marginRight: 8 }}>📡</span>
-        deploy to a testnet or mainnet by editing
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f9f9f9", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          packages/hardhat/hardhat.config.js
-        </span>
-        and running
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f1f1f1", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          yarn run deploy
-        </span>
-      </div>
-
-      <div style={{ marginTop: 32 }}>
-        <span style={{ marginRight: 8 }}>🔑</span>
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f1f1f1", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          yarn run generate
-        </span>
-        will create a deployer account in
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f9f9f9", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          packages/hardhat
-        </span>
-        <div style={{ marginTop: 8 }}>
-          (use{" "}
-          <span
-            className="highlight"
+        <h2 style={{ padding: 0 }}>Überprüfung Parkberechtigung</h2>
+        <div style={{ margin: 8, display: "flex", flexDirection: "column" }}>
+          <Input
+            placeholder={"Kennzeichen"}
+            name="licensePlate"
+            style={{ marginBottom: "1rem" }}
+            value={data.licensePlate}
+            onChange={event => handleChange(event)}
+          />
+          <Input
+            placeholder={"Parkzonen-ID"}
+            name="parkingZoneId"
+            style={{ marginBottom: "1rem" }}
+            value={data.parkingZoneId}
+            onChange={event => handleChange(event)}
+          />
+          <Button
             style={{
-              marginLeft: 4,
-              /* backgroundColor: "#f1f1f1", */ padding: 4,
-              borderRadius: 4,
-              fontWeight: "bolder",
+              marginTop: 8,
+              backgroundColor: "#fdce04",
+              color: "black",
+              border: "none",
             }}
+            onClick={handleSubmit}
           >
-            yarn run account
-          </span>{" "}
-          to display deployer address and balance)
+            Prüfen
+          </Button>
         </div>
-      </div>
-
-      <div style={{ marginTop: 32 }}>
-        <span style={{ marginRight: 8 }}>⚙️</span>
-        build your app with
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f1f1f1", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          yarn run build
-        </span>
-      </div>
-
-      <div style={{ marginTop: 32 }}>
-        <span style={{ marginRight: 8 }}>🚢</span>
-        ship it!
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f1f1f1", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          yarn run surge
-        </span>
-        or
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f1f1f1", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          yarn run s3
-        </span>
-        or
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f1f1f1", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          yarn run ipfs
-        </span>
-      </div>
-
-      <div style={{ marginTop: 32 }}>
-        <span style={{ marginRight: 8 }}>💬</span>
-        for support, join this
-        <span
-          className="highlight"
-          style={{ marginLeft: 4, /* backgroundColor: "#f9f9f9", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
-        >
-          <a target="_blank" rel="noopener noreferrer" href="https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA">
-            Telegram Chat
-          </a>
-          &nbsp; or &nbsp;
-          <a target="_blank" rel="noopener noreferrer" href="https://discord.gg/pRsr6rwG">
-            Discord
-          </a>
-        </span>
-      </div>
-      <div style={{ padding: 128 }}>
-        🛠 Check out your browser&apos;s developer console for more... (inspect console) 🚀
       </div>
     </div>
   );
