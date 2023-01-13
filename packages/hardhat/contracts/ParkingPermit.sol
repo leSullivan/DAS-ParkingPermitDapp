@@ -31,9 +31,9 @@ contract ParkingPermit is Ownable{
   uint256 priceForResidentRegistration = 1 ether;
   uint256 priceForGuestRegistrationPerDay = 0.1 ether;
   uint256 timeRegisteredForCitizen = 365 days;
-  uint256 deadline;
-  string licencePlate;
-  string parkingZoneId;
+  uint256 private deadline;
+  string private licencePlate;
+  string private parkingZoneId;
 
   mapping(address => bool) private citizenIsResident;
   mapping(address => string)private residentToParkingZoneId;
