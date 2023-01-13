@@ -1,4 +1,4 @@
-import { Button, Card, DatePicker, Divider, Input, Progress, Slider, Spin, Switch } from "antd";
+import { Button, Card, DatePicker, Divider, Input, Progress, Slider, Spin, Switch, List } from "antd";
 import React, { useState } from "react";
 import { ethers, utils } from "ethers";
 
@@ -56,7 +56,8 @@ export default function Hints({ tx, writeContracts }) {
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
       */}
       <div style={{ padding: 16, width: 400, margin: "auto", marginTop: "4rem" }}>
-        <div>{res[2] === true ? "valid" : "invalid"}</div>
+        {/* <div>{res[2] === true ? "valid" : "invalid"}</div> */}
+        <h2 style={{ padding: 0 }}>DIESE FUNKTION ZUM ADMINPANEL</h2>
         <div>
           <Input
             placeholder={"Adresse"}
