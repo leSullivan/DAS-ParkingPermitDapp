@@ -305,7 +305,7 @@ function App(props) {
       />
       <Menu style={{ textAlign: "center", marginTop: 20 }} selectedKeys={[location.pathname]} mode="horizontal">
         <Menu.Item key="/">
-          <Link to="/">Admininterface Stadt Leipzig</Link>
+          <Link to="/">Willkommen</Link>
         </Menu.Item>
         <Menu.Item key="/hints">
           <Link to="/hints">Überprüfung Parkberechtigung</Link>
@@ -313,11 +313,11 @@ function App(props) {
         <Menu.Item key="/exampleui">
           <Link to="/exampleui">Registrierung Anwohner</Link>
         </Menu.Item>
-        <Menu.Item key="/mainnetdai">
-          <Link to="/mainnetdai">Gastzugang Anwohner</Link>
+        <Menu.Item key="/subgraph">
+          <Link to="/subgraph">Gastzugang Anwohner</Link>
         </Menu.Item>
         <Menu.Item key="/debug">
-          <Link to="/debug">Debug Contracts</Link>
+          <Link to="/debug">Admininterface Stadt Leipzig</Link>
         </Menu.Item>
       </Menu>
 
@@ -395,14 +395,20 @@ function App(props) {
             />
             */}
         </Route>
-        {/* <Route path="/subgraph">
+        <Route path="/subgraph">
           <Subgraph
-            subgraphUri={props.subgraphUri}
+            address={address}
+            userSigner={userSigner}
+            mainnetProvider={mainnetProvider}
+            localProvider={localProvider}
+            yourLocalBalance={yourLocalBalance}
+            price={price}
             tx={tx}
             writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
+            readContracts={readContracts}
+            purpose={purpose}
           />
-        </Route> */}
+        </Route>
       </Switch>
 
       <ThemeSwitch />

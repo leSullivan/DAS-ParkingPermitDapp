@@ -1,202 +1,77 @@
-import { gql, useQuery } from "@apollo/client";
-import { Button, Input, Table, Typography } from "antd";
-import "antd/dist/antd.css";
-import GraphiQL from "graphiql";
-import "graphiql/graphiql.min.css";
-import fetch from "isomorphic-fetch";
+import { Button, Card, DatePicker, Divider, Input, Progress, Slider, Spin, Switch, List } from "antd";
 import React, { useState } from "react";
-import { Address } from "../components";
+import { ethers, utils } from "ethers";
 
-const highlight = {
-  marginLeft: 4,
-  marginRight: 8,
-  /* backgroundColor: "#f9f9f9", */ padding: 4,
-  borderRadius: 4,
-  fontWeight: "bolder",
-};
+export default function ExampleUI({ tx, writeContracts }) {
+  const [data, setData] = useState({ licensePlate: "", numDays: 0 });
 
-function Subgraph(props) {
-  function graphQLFetcher(graphQLParams) {
-    return fetch(props.subgraphUri, {
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(graphQLParams),
-    }).then(response => response.json());
-  }
+  const handleChange = event => {
+    setData({ ...data, [event.target.name]: event.target.value });
+  };
 
-  const EXAMPLE_GRAPHQL = `
-  {
-    purposes(first: 25, orderBy: createdAt, orderDirection: desc) {
-      id
-      purpose
-      createdAt
-      sender {
-        id
-      }
-    }
-    senders {
-      id
-      address
-      purposeCount
-    }
-  }
-  `;
-  const EXAMPLE_GQL = gql(EXAMPLE_GRAPHQL);
-  const { loading, data } = useQuery(EXAMPLE_GQL, { pollInterval: 2500 });
+  const handleSubmit = event => {
+    // prevents the submit button from refreshing the page
+    event.preventDefault();
+    console.log(data);
 
-  const purposeColumns = [
-    {
-      title: "Purpose",
-      dataIndex: "purpose",
-      key: "purpose",
-    },
-    {
-      title: "Sender",
-      key: "id",
-      render: record => <Address value={record.sender.id} ensProvider={props.mainnetProvider} fontSize={16} />,
-    },
-    {
-      title: "createdAt",
-      key: "createdAt",
-      dataIndex: "createdAt",
-      render: d => new Date(d * 1000).toISOString(),
-    },
-  ];
-
-  const [newPurpose, setNewPurpose] = useState("loading...");
-
-  const deployWarning = (
-    <div style={{ marginTop: 8, padding: 8 }}>Warning: 🤔 Have you deployed your subgraph yet?</div>
-  );
+    const result = tx(
+      writeContracts.ParkingPermit.registerGuestParkingPermit(data.numDays, data.licensePlate, {
+        value: utils.parseEther((data.numDays * 0.1).toString()),
+      }),
+      update => {
+        console.log("📡 Transaction Update:", update);
+        if (update && (update.status === "confirmed" || update.status === 1)) {
+          console.log(" 🍾 Transaction " + update.hash + " finished!");
+          console.log(
+            " ⛽️ " +
+              update.gasUsed +
+              "/" +
+              (update.gasLimit || update.gas) +
+              " @ " +
+              parseFloat(update.gasPrice) / 1000000000 +
+              " gwei",
+          );
+        }
+      },
+    );
+    setData({ licensePlate: "", numDays: 0 });
+  };
 
   return (
-    <>
-      <div style={{ margin: "auto", marginTop: 32 }}>
-        You will find that parsing/tracking events with the{" "}
-        <span className="highlight" style={highlight}>
-          useEventListener
-        </span>{" "}
-        hook becomes a chore for every new project.
-      </div>
-      <div style={{ margin: "auto", marginTop: 32 }}>
-        Instead, you can use{" "}
-        <a href="https://thegraph.com/docs/about/introduction" target="_blank" rel="noopener noreferrer">
-          The Graph
-        </a>{" "}
-        with 🏗 scaffold-eth (
-        <a href="https://youtu.be/T5ylzOTkn-Q" target="_blank" rel="noopener noreferrer">
-          learn more
-        </a>
-        ):
-      </div>
-
-      <div style={{ margin: 32 }}>
-        <span style={{ marginRight: 8 }}>⛓️</span>
-        Make sure your local chain is running first:
-        <span className="highlight" style={highlight}>
-          yarn chain
-        </span>
-      </div>
-
-      <div style={{ margin: 32 }}>
-        <span style={{ marginRight: 8 }}>🚮</span>
-        Clean up previous data, if there is any:
-        <span className="highlight" style={highlight}>
-          yarn clean-graph-node
-        </span>
-      </div>
-
-      <div style={{ margin: 32 }}>
-        <span style={{ marginRight: 8 }}>📡</span>
-        Spin up a local graph node by running
-        <span className="highlight" style={highlight}>
-          yarn run-graph-node
-        </span>
-        <span style={{ marginLeft: 4 }}>
-          {" "}
-          (requires{" "}
-          <a href="https://www.docker.com/products/docker-desktop" target="_blank" rel="noopener noreferrer">
-            {" "}
-            Docker
-          </a>
-          ){" "}
-        </span>
-      </div>
-
-      <div style={{ margin: 32 }}>
-        <span style={{ marginRight: 8 }}>📝</span>
-        Create your <b>local subgraph</b> by running
-        <span className="highlight" style={highlight}>
-          yarn graph-create-local
-        </span>
-        (only required once!)
-      </div>
-
-      <div style={{ margin: 32 }}>
-        <span style={{ marginRight: 8 }}>🚢</span>
-        Deploy your <b>local subgraph</b> by running
-        <span className="highlight" style={highlight}>
-          yarn graph-ship-local
-        </span>
-      </div>
-
-      <div style={{ margin: 32 }}>
-        <span style={{ marginRight: 8 }}>🖍️</span>
-        Edit your <b>local subgraph</b> in
-        <span className="highlight" style={highlight}>
-          packages/subgraph/src
-        </span>
-        (learn more about subgraph definition{" "}
-        <a
-          href="https://thegraph.com/docs/en/developer/define-subgraph-hosted/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          here
-        </a>
-        )
-      </div>
-
-      <div style={{ margin: 32 }}>
-        <span style={{ marginRight: 8 }}>🤩</span>
-        Deploy your <b>contracts and your subgraph</b> in one go by running
-        <span className="highlight" style={highlight}>
-          yarn deploy-and-graph
-        </span>
-      </div>
-
-      <div style={{ width: 780, margin: "auto", paddingBottom: 64 }}>
-        <div style={{ margin: 32, textAlign: "right" }}>
+    <div>
+      {/*
+        ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
+      */}
+      <div style={{ padding: 16, width: 400, margin: "auto", marginTop: "4rem" }}>
+        <h2 style={{ padding: 0 }}>Beantragung Bewohnerparkplatz</h2>
+        <div style={{ margin: 8, display: "flex", flexDirection: "column" }}>
           <Input
-            onChange={e => {
-              setNewPurpose(e.target.value);
-            }}
+            placeholder={"Kennzeichen"}
+            name="licensePlate"
+            style={{ marginBottom: "1rem" }}
+            value={data.licensePlate}
+            onChange={event => handleChange(event)}
+          />
+          <Input
+            placeholder={"Ausstellungsdauer in Tagen"}
+            name="numDays"
+            style={{ marginBottom: "1rem" }}
+            value={data.parkingZoneId}
+            onChange={event => handleChange(event)}
           />
           <Button
-            onClick={() => {
-              console.log("newPurpose", newPurpose);
-              /* look how you call setPurpose on your contract: */
-              props.tx(props.writeContracts.YourContract.setPurpose(newPurpose));
+            style={{
+              marginTop: 8,
+              backgroundColor: "#fdce04",
+              color: "black",
+              border: "none",
             }}
+            onClick={handleSubmit}
           >
-            Set Purpose
+            Registrieren
           </Button>
         </div>
-
-        {data ? (
-          <Table dataSource={data.purposes} columns={purposeColumns} rowKey="id" />
-        ) : (
-          <Typography>{loading ? "Loading..." : deployWarning}</Typography>
-        )}
-
-        <div style={{ margin: 32, height: 400, border: "1px solid #888888", textAlign: "left" }}>
-          <GraphiQL fetcher={graphQLFetcher} docExplorerOpen query={EXAMPLE_GRAPHQL} />
-        </div>
       </div>
-
-      <div style={{ padding: 64 }}>...</div>
-    </>
+    </div>
   );
 }
-
-export default Subgraph;
