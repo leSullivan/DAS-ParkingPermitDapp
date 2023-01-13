@@ -68,7 +68,8 @@ contract ParkingPermit is Ownable{
   @param _periodInDays ammount of days to grant parking permit
   @param _licensePlate license plate in format "(X)(X)X-XX-(X)(X)X" for guest car
   */
-  function registerGuestParkingPermit(uint256 _periodInDays, string memory _licensePlate) external onlyAuthorizedResident{
+  function registerGuestParkingPermit(uint256 _periodInDays, string memory _licensePlate) external payable onlyAuthorizedResident{
+    require(msg.value == priceForGuestRegistrationPerDay * _periodInDays, "Please send the exact ammount of ether");
     deadline = block.timestamp + _periodInDays * 1 days;
     parkingZoneId = residentToParkingZoneId[msg.sender];
     Permit memory permit = Permit(deadline, parkingZoneId,true);
