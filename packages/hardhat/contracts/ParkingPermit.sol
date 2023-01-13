@@ -4,6 +4,8 @@ pragma solidity >=0.8.0 <0.9.0;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+//deployed on goerli testnet @0xF420905f166b4D4776576A7A0981eb93fff10493
+
 contract ParkingPermit is Ownable{
 
   modifier onlyAuthorizedRegulator(){
@@ -31,9 +33,9 @@ contract ParkingPermit is Ownable{
   uint256 priceForResidentRegistration = 1 ether;
   uint256 priceForGuestRegistrationPerDay = 0.1 ether;
   uint256 timeRegisteredForCitizen = 365 days;
-  uint256 deadline;
-  string licencePlate;
-  string parkingZoneId;
+  uint256 private deadline;
+  string private licencePlate;
+  string private parkingZoneId;
 
   mapping(address => bool) private citizenIsResident;
   mapping(address => string)private residentToParkingZoneId;
