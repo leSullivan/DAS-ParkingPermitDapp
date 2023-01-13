@@ -22,7 +22,7 @@ export default function Header({ link, title, subTitle, imgSrc, ...props }) {
 }
 
 Header.defaultProps = {
-  link: "https://github.com/scaffold-eth/scaffold-eth",
+  link: "https://github.com/leSullivan/DAS-ParkingPermitDapp",
   title: "Stadt Leipzig",
   imgSrc: "https://static.leipzig.de/typo3conf/ext/mkleipzig/Resources/Public/img/logo.png",
 };
