@@ -55,16 +55,6 @@ export default function Hints({ tx, writeContracts }) {
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
       */}
       <div style={{ padding: 16, width: 400, margin: "auto", marginTop: "4rem" }}>
-        <h2 style={{ padding: 0 }}>DIESE FUNKTION ZUM ADMINPANEL</h2>
-        <div>
-          <Input
-            placeholder={"Adresse"}
-            name="address"
-            style={{ marginBottom: "1rem" }}
-            onChange={event => setAuthorization(event.target.value)}
-          />
-          <Button onClick={handleAuthorized}>Authorisieren</Button>
-        </div>
         <h2 style={{ padding: 0 }}>Überprüfung Parkberechtigung</h2>
         <div style={{ margin: 8, display: "flex", flexDirection: "column" }}>
           <Input
