@@ -1,4 +1,10 @@
-.App {
+  .App {
   text-align: center;
   padding-left: calc(100vw - 100%);
+}
+.button-disabled {
+  opacity: 0.5;
+}
+.button-active {
+  opacity: 1;
 }
