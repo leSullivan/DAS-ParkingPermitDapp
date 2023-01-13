@@ -5,8 +5,9 @@ import './ParkingPermit.sol';
 // Chainlink Imports
 
 import "@chainlink/contracts/src/v0.8/KeeperCompatible.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-contract FutureImplementaions is ParkingPermit, KeeperCompatibleInterface, VRFConsumerBaseV2{
+contract FutureImplementaions is ParkingPermit, KeeperCompatibleInterface{
 
     AggregatorV3Interface public aggregatorV3Interface;
     uint intervalSeconds; 
@@ -22,7 +23,7 @@ contract FutureImplementaions is ParkingPermit, KeeperCompatibleInterface, VRFCo
         subscriptionId = _subscriptionId;
 
         //set to a pricefeed on goerli network. currently set to BTC/USD goerli
-        pricefeed = AggregatorV3Interface(_pricefeed);
+        aggregatorV3Interface = AggregatorV3Interface(_pricefeed);
 
         // set the price for the chosen currency pair.
         currentPrice = getLatestPrice();
@@ -36,12 +37,17 @@ contract FutureImplementaions is ParkingPermit, KeeperCompatibleInterface, VRFCo
         require((block.timestamp - lastTimeStamp) > intervalSeconds); 
         console.log("Upkeep Started");
         lastTimeStamp = block.timestamp;
-        int latestPrice = getLatestPrice();
+        uint256 latestPrice = uint256(getLatestPrice());
         uint256 priceRatio = latestPrice / currentPrice;
-        ParkingPermit.setPriceForResidentRegistration(ParkingPermit.priceForResidentRegistration * priceRatio);
-        ParkingPermit.setPriceForGuestRegistrationPerDay(ParkingPermit.priceForGuestRegistrationPerDay * priceRatio);
+        ParkingPermit.setPriceForResidentRegistration(ParkingPermit.priceForResidentRegistration() * priceRatio);
+        ParkingPermit.setPriceForGuestRegistrationPerDay(ParkingPermit.priceForGuestRegistrationPerDay() * priceRatio);
         currentPrice = latestPrice;
-        
+    }
+
+    function getLatestPrice() public view returns(int256){
+         (,int price,,,) = aggregatorV3Interface.latestRoundData();
+         return price;
+         
     }
 }
 
