@@ -1,4 +1,5 @@
-import { Button, Card, DatePicker, Divider, Input, Progress, Slider, Spin, Switch, List } from "antd";
+import { Button, Card, DatePicker, Divider, Input, Progress, Slider, Spin, Switch } from "antd";
+import { CheckCircleFilled, ExclamationCircleFilled } from "@ant-design/icons";
 import React, { useState } from "react";
 import { ethers, utils } from "ethers";
 
@@ -48,15 +49,12 @@ export default function Hints({ tx, writeContracts }) {
     });
   };
 
-  console.log(res, "fuck");
-
   return (
     <div>
       {/*
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
       */}
       <div style={{ padding: 16, width: 400, margin: "auto", marginTop: "4rem" }}>
-        {/* <div>{res[2] === true ? "valid" : "invalid"}</div> */}
         <h2 style={{ padding: 0 }}>DIESE FUNKTION ZUM ADMINPANEL</h2>
         <div>
           <Input
@@ -83,6 +81,19 @@ export default function Hints({ tx, writeContracts }) {
             value={data.parkingZoneId}
             onChange={event => handleChange(event)}
           />
+          <div>
+            {res[2] === true ? (
+              <div style={{ display: "flex", flexDirection: "row", gap: "0.5rem", color: "green" }}>
+                <CheckCircleFilled style={{ fontSize: "1.5rem", color: "green" }} />
+                <p>Berechtigt</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "row", gap: "0.5rem", color: "red" }}>
+                <ExclamationCircleFilled style={{ fontSize: "1.5rem", color: "red" }} />
+                <p>Nicht berechtigt</p>
+              </div>
+            )}
+          </div>
           <Button
             style={{
               marginTop: 8,
